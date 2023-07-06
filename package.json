@@ -1,0 +1,31 @@
+{
+  "name": "arena-mesh-ui",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "dist/aframe-mesh-ui.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint --fix .",
+    "format": "prettier -w ."
+  },
+  "devDependencies": {
+    "aframe": "^1.4.2",
+    "eslint": "^8.44.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^5.0.0-alpha.1",
+    "prettier": "^3.0.0",
+    "vite": "^4.3.9",
+    "vite-plugin-eslint": "^1.8.1"
+  },
+  "dependencies": {
+    "three-mesh-ui": "^6.5.4"
+  }
+}
