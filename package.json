@@ -6,7 +6,14 @@
   "files": [
     "dist"
   ],
-  "module": "dist/aframe-mesh-ui.js",
+  "main": "./dist/arena-mesh-ui.umd.cjs",
+  "module": "dist/arena-mesh-ui.js",
+  "exports": {
+    ".": {
+      "import": "./dist/arena-mesh-ui.js",
+      "require": "./dist/arena-mesh-ui.umd.cjs"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
