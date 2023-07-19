@@ -17,11 +17,28 @@
             <a-entity
                 id="card-example"
                 position="0 1.6 -1.5"
-                arena-ui-card="title:ARENA Title;
+                arena-ui-card="title:ARENA Title Right;
                 body: The Augmented Reality Edge Network Architecture (ARENA) is a platform designed to simplify programming where there is a mix of virtual and physical systems, with locality and pervasive sensing as first-class citizens. ARENA makes it easy to create and host multiple applications that interact with users and other agents in an immersive 3D environment created inside a browser.;
-                img: https://docs.arenaxr.org/assets/img/intro/robot-arm.png"
+                img: https://docs.arenaxr.org/assets/img/intro/robot-arm.png;
+                imgCaption: Look it's a robot;
+                imgDirection: left"
+
+            ></a-entity>
+
+            <a-entity
+                id="card-example2"
+                position="-3 1.6 -1.5"
+                arena-ui-card="title:ARENA Title Left;
+                body: The Augmented Reality Edge Network Architecture (ARENA) is a platform designed to simplify programming where there is a mix of virtual and physical systems, with locality and pervasive sensing as first-class citizens.;
+                bodyAlign: left;
+                img: https://docs.arenaxr.org/assets/img/intro/robot-arm.png;
+                imgCaption: Look it's a robot;
+                imgSize: stretch;
+                fontSize: 0.06;
+                widthScale: 1.5"
             ></a-entity>
         </a-scene>
         <script type="module" src="/src/main.js"></script>
     </body>
 </html>
+
