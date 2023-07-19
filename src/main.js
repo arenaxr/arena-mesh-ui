@@ -75,13 +75,7 @@ AFRAME.components.raycaster.Component.prototype.checkIntersections = function ch
         if (data.showLine && intersection.object === el.getObject3D('line')) {
             continue;
         }
-        if (intersection.object.name === 'UIBackgroundBox') {
-            if (intersection.object.parent?.isMeshUIButton) {
-                console.log('UI Button intersected', intersection.object.parent.name);
-                intersections.push(intersection);
-                intersectedEls.push(intersection.object.parent.el);
-            }
-        } else if (intersection.object.el) {
+        if (intersection.object.el) {
             intersections.push(intersection);
             intersectedEls.push(intersection.object.el);
         }

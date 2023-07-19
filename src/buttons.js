@@ -1,0 +1,204 @@
+/* global AFRAME, THREE */
+import ThreeMeshUI from 'three-mesh-ui';
+import { ARENAColors } from './constants';
+
+// BUTTONS
+
+// We start by creating objects containing options that we will use with the two buttons,
+// in order to write less code.
+
+const buttonOptions = {
+    width: 'auto',
+    height: 'auto',
+    padding: 0.05,
+    justifyContent: 'center',
+    offset: 0.05,
+    margin: 0.02,
+    borderRadius: 0.075,
+    textAlign: 'center',
+};
+
+// Options for component.setupState().
+// It must contain a 'state' parameter, which you will refer to with component.setState( 'name-of-the-state' ).
+
+const BUTTONSTATES = {
+    default: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color(0xff0000),
+        backgroundOpacity: 0.3,
+        color: ARENAColors.text,
+        padding: [0.015, 0.05],
+    },
+    hover: {
+        backgroundColor: new THREE.Color(0x0000ff),
+    },
+    selected: {
+        offset: 0.02,
+        backgroundColor: new THREE.Color(0x00ff00),
+    },
+};
+
+const buttonTextOptions = {
+    offset: 0,
+    padding: [0.015, 0.05],
+};
+
+AFRAME.registerComponent('arena-ui-buttons', {
+    curDownButton: undefined,
+    curButtonHover: undefined,
+    buttonMap: {},
+    schema: {
+        buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
+    },
+
+    init() {
+        const meshContainer = new THREE.Group();
+        meshContainer.position.set(0, 1, -1.9);
+
+        const object3DContainer = new THREE.Object3D();
+        this.object3DContainer = object3DContainer;
+        object3DContainer.add(meshContainer);
+        this.makePanel();
+        this.el.setObject3D('mesh', this.object3DContainer);
+        this.el.addEventListener('mousedown', this.mouseDownHandler.bind(this));
+        this.el.addEventListener('mouseup', this.mouseUpHandler.bind(this));
+        this.el.addEventListener('mouseenter', this.mouseEnterHandler.bind(this));
+        this.el.addEventListener('mouseleave', this.mouseLeaveHandler.bind(this));
+    },
+
+    mouseEnterHandler(evt) {
+        if ('cursorEl' in evt.detail) {
+            console.log('enter', evt.detail.intersection?.object.parent.name);
+            this.curButtonHover = evt.detail.intersection?.object.parent.name;
+            if (this.curButtonHover in this.buttonMap) {
+                this.buttonMap[this.curButtonHover].el.set(BUTTONSTATES.hover);
+                this.buttonMap[this.curButtonHover].prevState = 'default';
+            }
+        }
+    },
+    mouseLeaveHandler(evt) {
+        if ('cursorEl' in evt.detail) {
+            console.log('leave', evt.detail.intersection?.object.parent.name);
+            const curButtonHoverEl = this.buttonMap[this.curButtonHover];
+            if (curButtonHoverEl) {
+                curButtonHoverEl.el.set(BUTTONSTATES.default); // Force default state
+                this.buttonMap[this.curButtonHover].prevState = 'default';
+            }
+            this.curButtonHover = undefined;
+            this.curDownButton = undefined;
+        }
+    },
+
+    mouseDownHandler(evt) {
+        if ('cursorEl' in evt.detail) {
+            this.curDownButton = evt.detail.intersection?.object.parent.name;
+            if (this.curDownButton in this.buttonMap) {
+                this.buttonMap[this.curDownButton].el.set(BUTTONSTATES.selected);
+                this.buttonMap[this.curDownButton].prevState = 'hover'; // Assume that we are hovering before click
+            }
+        }
+    },
+    mouseUpHandler(evt) {
+        if ('cursorEl' in evt.detail) {
+            const curDownButtonEl = this.buttonMap[this.curDownButton];
+            if (this.curDownButton === evt.detail.intersection?.object.parent.name) {
+                if (curDownButtonEl) {
+                    curDownButtonEl.clickFn();
+                }
+            }
+            if (curDownButtonEl) {
+                curDownButtonEl.el.set(BUTTONSTATES[curDownButtonEl.prevState]);
+            }
+            this.curDownButton = undefined;
+        }
+    },
+
+    makePanel() {
+        const { object3DContainer } = this;
+
+        const meshContainer = new THREE.Group();
+        meshContainer.position.set(0, 1, -1.9);
+        object3DContainer.add(meshContainer);
+
+        let currentMesh = 0;
+        const objsToTest = [];
+
+        const sphere = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(0.3, 1),
+            new THREE.MeshStandardMaterial({ color: 0x3de364, flatShading: true }),
+        );
+
+        const box = new THREE.Mesh(
+            new THREE.BoxGeometry(0.45, 0.45, 0.45),
+            new THREE.MeshStandardMaterial({ color: 0x643de3, flatShading: true }),
+        );
+
+        const cone = new THREE.Mesh(
+            new THREE.ConeGeometry(0.28, 0.5, 10),
+            new THREE.MeshStandardMaterial({ color: 0xe33d4e, flatShading: true }),
+        );
+
+        sphere.visible = true;
+        box.visible = cone.visible = false;
+
+        meshContainer.add(sphere, box, cone);
+
+        const meshes = [sphere, box, cone];
+
+        function showMesh(id) {
+            meshes.forEach((mesh, i) => {
+                mesh.visible = i === id;
+            });
+        }
+
+        const container = new ThreeMeshUI.Block({
+            backgroundColor: ARENAColors.bg,
+            justifyContent: 'center',
+            flexDirection: 'row',
+            fontFamily: 'Roboto',
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11,
+        });
+
+        container.position.set(0, 0.6, -1.2);
+        container.rotation.x = -0.55;
+        object3DContainer.add(container);
+
+        // Buttons creation, with the options objects passed in parameters.
+
+        const buttonNext = new ThreeMeshUI.Block({ ...buttonOptions, name: 'buttonNext' });
+        const buttonPrevious = new ThreeMeshUI.Block({ ...buttonOptions, name: 'buttonPrevious' });
+        buttonNext.isMeshUIButton = true;
+        buttonPrevious.isMeshUIButton = true;
+
+        // Add text to buttons
+
+        buttonNext.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: 'buttonNext', textContent: 'next' }));
+        buttonPrevious.add(
+            new ThreeMeshUI.Text({ ...buttonTextOptions, name: 'buttonPrevious', textContent: 'previous' }),
+        );
+
+        buttonNext.set(BUTTONSTATES.default);
+        buttonPrevious.set(BUTTONSTATES.default);
+
+        this.buttonMap.buttonNext = {
+            el: buttonNext,
+            clickFn: () => {
+                currentMesh = (currentMesh + 1) % 3;
+                showMesh(currentMesh);
+            },
+        };
+        this.buttonMap.buttonPrevious = {
+            el: buttonPrevious,
+            clickFn: () => {
+                currentMesh -= 1;
+                if (currentMesh < 0) currentMesh = 2;
+                showMesh(currentMesh);
+            },
+        };
+
+        container.add(buttonPrevious, buttonNext);
+        objsToTest.push(buttonNext, buttonPrevious);
+    },
+});

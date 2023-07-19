@@ -37,6 +37,26 @@
                 fontSize: 0.06;
                 widthScale: 1.5"
             ></a-entity>
+
+            <a-entity arena-ui-buttons click-listener position='3 0 -2'></a-entity>
+            <a-camera
+                id="my-camera"
+                near="0.1"
+                far="10000"
+                gesture-detector
+                look-controls="reverseMouseDrag: true"
+                arrow-controls
+                mouse-cursor
+                press-and-move
+                wasd-controls="fly: false; acceleration: 30; constrainToNavMesh:true"
+                geometry="primitive: box; width: 0.25; height: 0.25; depth: 0.25"
+            >
+                <a-entity
+                    cursor="rayOrigin: mouse"
+                    id="mouse-cursor"
+                    raycaster="objects:[click-listener],[click-listener-local]"
+                ></a-entity>
+            </a-camera>
         </a-scene>
         <script type="module" src="/src/main.js"></script>
     </body>
