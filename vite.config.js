@@ -11,6 +11,7 @@ export default defineConfig({
             fileName: 'arena-mesh-ui',
         },
         rollupOptions: {
+            external: ['three', 'aframe'],
             output: {
                 // Provide global variables to use in the UMD build
                 // for externalized deps
