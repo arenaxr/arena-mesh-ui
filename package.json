@@ -33,6 +33,10 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "dependencies": {
-    "three-mesh-ui": "^6.5.4"
+    "three-mesh-ui": "github:felixmariotto/three-mesh-ui#8294586"
+  },
+  "peerDependencies": {
+    "aframe": "^1.4.2",
+    "three": "^0.148.0"
   }
 }
