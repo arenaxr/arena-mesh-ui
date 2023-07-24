@@ -125,6 +125,13 @@ AFRAME.registerComponent('arena-ui-buttons', {
         }
     },
 
+    setClickFn(buttonName, clickFn) {
+        const button = this.buttonMap[buttonName];
+        if (button) {
+            button.clickFn = clickFn;
+        }
+    },
+
     makePanel() {
         const { object3DContainer } = this;
 
@@ -133,7 +140,6 @@ AFRAME.registerComponent('arena-ui-buttons', {
         object3DContainer.add(meshContainer);
 
         let currentMesh = 0;
-        const objsToTest = [];
 
         const sphere = new THREE.Mesh(
             new THREE.IcosahedronGeometry(0.3, 1),
@@ -179,40 +185,25 @@ AFRAME.registerComponent('arena-ui-buttons', {
 
         // Buttons creation, with the options objects passed in parameters.
 
-        const buttonNext = new ThreeMeshUI.Block({ ...buttonOptions, name: 'buttonNext' });
-        const buttonPrevious = new ThreeMeshUI.Block({ ...buttonOptions, name: 'buttonPrevious' });
-        buttonNext.isMeshUIButton = true;
-        buttonPrevious.isMeshUIButton = true;
+        this.data.buttons.forEach((buttonName) => {
+            const button = new ThreeMeshUI.Block({ ...buttonOptions, name: buttonName });
+            button.isMeshUIButton = true;
+            button.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: buttonName, textContent: buttonName }));
+            button.set(BUTTONSTATES.default);
+            this.buttonMap[buttonName] = {
+                el: button,
+                state: 'default',
+            };
+            container.add(button);
+        });
 
-        // Add text to buttons
-
-        buttonNext.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: 'buttonNext', textContent: 'next' }));
-        buttonPrevious.add(
-            new ThreeMeshUI.Text({ ...buttonTextOptions, name: 'buttonPrevious', textContent: 'previous' }),
-        );
-
-        buttonNext.set(BUTTONSTATES.default);
-        buttonPrevious.set(BUTTONSTATES.default);
-
-        this.buttonMap.buttonNext = {
-            el: buttonNext,
-            clickFn: () => {
-                currentMesh = (currentMesh + 1) % 3;
-                showMesh(currentMesh);
-            },
-            state: 'default',
-        };
-        this.buttonMap.buttonPrevious = {
-            el: buttonPrevious,
-            clickFn: () => {
-                currentMesh -= 1;
-                if (currentMesh < 0) currentMesh = 2;
-                showMesh(currentMesh);
-            },
-            state: 'default',
-        };
-
-        container.add(buttonPrevious, buttonNext);
-        objsToTest.push(buttonNext, buttonPrevious);
+        this.setClickFn('Previous', () => {
+            currentMesh = (currentMesh + 1) % 3;
+            showMesh(currentMesh);
+        });
+        this.setClickFn('Next', () => {
+            currentMesh = (currentMesh + 2) % 3;
+            showMesh(currentMesh);
+        });
     },
 });
