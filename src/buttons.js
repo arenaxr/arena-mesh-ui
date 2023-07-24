@@ -43,9 +43,12 @@ const buttonTextOptions = {
     padding: [0.015, 0.05],
 };
 
+const EVENTS = {
+    INTERSECT: 'raycaster-intersected',
+    INTERSECT_CLEAR: 'raycaster-intersected-cleared',
+};
+
 AFRAME.registerComponent('arena-ui-buttons', {
-    curDownButton: undefined,
-    curButtonHover: undefined,
     buttonMap: {},
     schema: {
         buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
@@ -62,54 +65,63 @@ AFRAME.registerComponent('arena-ui-buttons', {
         this.el.setObject3D('mesh', this.object3DContainer);
         this.el.addEventListener('mousedown', this.mouseDownHandler.bind(this));
         this.el.addEventListener('mouseup', this.mouseUpHandler.bind(this));
-        this.el.addEventListener('mouseenter', this.mouseEnterHandler.bind(this));
-        this.el.addEventListener('mouseleave', this.mouseLeaveHandler.bind(this));
+        this.el.addEventListener(EVENTS.INTERSECT, this.mouseEnterHandler.bind(this));
+        this.el.addEventListener(EVENTS.INTERSECT_CLEAR, this.mouseLeaveHandler.bind(this));
     },
 
     mouseEnterHandler(evt) {
-        if ('cursorEl' in evt.detail) {
-            console.log('enter', evt.detail.intersection?.object.parent.name);
-            this.curButtonHover = evt.detail.intersection?.object.parent.name;
-            if (this.curButtonHover in this.buttonMap) {
-                this.buttonMap[this.curButtonHover].el.set(BUTTONSTATES.hover);
-                this.buttonMap[this.curButtonHover].prevState = 'default';
+        // console.log('raycaster-entered', evt.detail);
+        if ('UIEl' in evt.detail) {
+            const hoveredButton = this.buttonMap[evt.detail.UIEl];
+            // console.log('enter intersection', hoveredButton);
+            if (hoveredButton) {
+                hoveredButton.el.set(BUTTONSTATES.hover);
+                hoveredButton.prevState = 'default';
+                hoveredButton.state = 'hover';
             }
         }
     },
     mouseLeaveHandler(evt) {
-        if ('cursorEl' in evt.detail) {
-            console.log('leave', evt.detail.intersection?.object.parent.name);
-            const curButtonHoverEl = this.buttonMap[this.curButtonHover];
-            if (curButtonHoverEl) {
-                curButtonHoverEl.el.set(BUTTONSTATES.default); // Force default state
-                this.buttonMap[this.curButtonHover].prevState = 'default';
+        // console.log('raycaster-cleared', evt.detail.clearedUIEls);
+        evt.detail.clearedUIEls?.forEach((el) => {
+            // console.log('clearing', el.parent.name);
+            const hoveredButton = this.buttonMap[el.parent.name];
+            if (hoveredButton) {
+                hoveredButton.el.set(BUTTONSTATES.default); // Force default state
+                hoveredButton.prevState = 'default';
+                hoveredButton.state = 'default';
             }
-            this.curButtonHover = undefined;
-            this.curDownButton = undefined;
-        }
+        });
     },
 
     mouseDownHandler(evt) {
         if ('cursorEl' in evt.detail) {
-            this.curDownButton = evt.detail.intersection?.object.parent.name;
-            if (this.curDownButton in this.buttonMap) {
-                this.buttonMap[this.curDownButton].el.set(BUTTONSTATES.selected);
-                this.buttonMap[this.curDownButton].prevState = 'hover'; // Assume that we are hovering before click
+            // console.log('down', evt.detail);
+            const selectedButton = this.buttonMap[evt.detail.intersection?.object.parent.name];
+            if (selectedButton) {
+                selectedButton.el.set(BUTTONSTATES.selected);
+                selectedButton.prevState = 'hover'; // Assume that we are hovering before click
+                selectedButton.state = 'selected';
+                selectedButton.selector = evt.detail.cursorEl;
             }
         }
     },
     mouseUpHandler(evt) {
+        // console.log('up', evt.detail);
         if ('cursorEl' in evt.detail) {
-            const curDownButtonEl = this.buttonMap[this.curDownButton];
-            if (this.curDownButton === evt.detail.intersection?.object.parent.name) {
-                if (curDownButtonEl) {
-                    curDownButtonEl.clickFn();
-                }
+            const curSelectedButton = this.buttonMap[evt.detail.intersection?.object.parent.name];
+            // If this is the same button we clicked on, then call its function
+            if (curSelectedButton && curSelectedButton.selector === evt.detail.cursorEl) {
+                curSelectedButton.clickFn();
             }
-            if (curDownButtonEl) {
-                curDownButtonEl.el.set(BUTTONSTATES[curDownButtonEl.prevState]);
+            // Clear previously selected button from this cursor in any case
+            const prevSelectedButton = Object.values(this.buttonMap).find((b) => b.selector === evt.detail.cursorEl);
+            if (prevSelectedButton) {
+                prevSelectedButton.el.set(BUTTONSTATES[prevSelectedButton.prevState]);
+                prevSelectedButton.prevState = 'default';
+                prevSelectedButton.state = 'default';
+                prevSelectedButton.selector = undefined;
             }
-            this.curDownButton = undefined;
         }
     },
 
@@ -188,6 +200,7 @@ AFRAME.registerComponent('arena-ui-buttons', {
                 currentMesh = (currentMesh + 1) % 3;
                 showMesh(currentMesh);
             },
+            state: 'default',
         };
         this.buttonMap.buttonPrevious = {
             el: buttonPrevious,
@@ -196,6 +209,7 @@ AFRAME.registerComponent('arena-ui-buttons', {
                 if (currentMesh < 0) currentMesh = 2;
                 showMesh(currentMesh);
             },
+            state: 'default',
         };
 
         container.add(buttonPrevious, buttonNext);
