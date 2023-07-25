@@ -1,12 +1,8 @@
 /* global AFRAME, THREE */
 import ThreeMeshUI from 'three-mesh-ui';
-import { ARENAColors } from './constants';
+import { ARENAColors, EVENTS } from './constants';
 
 // BUTTONS
-
-// We start by creating objects containing options that we will use with the two buttons,
-// in order to write less code.
-
 const buttonOptions = {
     width: 'auto',
     height: 'auto',
@@ -18,8 +14,10 @@ const buttonOptions = {
     textAlign: 'center',
 };
 
-// Options for component.setupState().
-// It must contain a 'state' parameter, which you will refer to with component.setState( 'name-of-the-state' ).
+const buttonTextOptions = {
+    offset: 0,
+    padding: [0.015, 0.05],
+};
 
 const BUTTONSTATES = {
     default: {
@@ -38,35 +36,28 @@ const BUTTONSTATES = {
     },
 };
 
-const buttonTextOptions = {
-    offset: 0,
-    padding: [0.015, 0.05],
-};
-
-const EVENTS = {
-    INTERSECT: 'raycaster-intersected',
-    INTERSECT_CLEAR: 'raycaster-intersected-cleared',
-};
-
-AFRAME.registerComponent('arena-ui-buttons', {
-    buttonMap: {},
-    schema: {
-        buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
-    },
+const buttonBase = {
+    buttonMap: undefined,
+    object3DContainer: undefined,
 
     init() {
-        const meshContainer = new THREE.Group();
-        meshContainer.position.set(0, 1, -1.9);
+        this.buttonMap = {};
+        this.object3DContainer = new THREE.Object3D();
+        this.registerListeners();
+    },
 
-        const object3DContainer = new THREE.Object3D();
-        this.object3DContainer = object3DContainer;
-        object3DContainer.add(meshContainer);
-        this.makePanel();
-        this.el.setObject3D('mesh', this.object3DContainer);
+    registerListeners() {
         this.el.addEventListener('mousedown', this.mouseDownHandler.bind(this));
         this.el.addEventListener('mouseup', this.mouseUpHandler.bind(this));
         this.el.addEventListener(EVENTS.INTERSECT, this.mouseEnterHandler.bind(this));
         this.el.addEventListener(EVENTS.INTERSECT_CLEAR, this.mouseLeaveHandler.bind(this));
+    },
+
+    unregisterListeners() {
+        this.el.removeEventListener('mousedown', this.mouseDownHandler);
+        this.el.removeEventListener('mouseup', this.mouseUpHandler);
+        this.el.removeEventListener(EVENTS.INTERSECT, this.mouseEnterHandler);
+        this.el.removeEventListener(EVENTS.INTERSECT_CLEAR, this.mouseLeaveHandler);
     },
 
     mouseEnterHandler(evt) {
@@ -81,6 +72,7 @@ AFRAME.registerComponent('arena-ui-buttons', {
             }
         }
     },
+
     mouseLeaveHandler(evt) {
         // console.log('raycaster-cleared', evt.detail.clearedUIEls);
         evt.detail.clearedUIEls?.forEach((el) => {
@@ -125,6 +117,23 @@ AFRAME.registerComponent('arena-ui-buttons', {
         }
     },
 
+    createButton(buttonName, clickFn) {
+        const button = new ThreeMeshUI.Block({ ...buttonOptions, name: buttonName });
+        button.isMeshUIButton = true;
+        button.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: buttonName, textContent: buttonName }));
+        button.set(BUTTONSTATES.default);
+        this.buttonMap[buttonName] = {
+            el: button,
+            state: 'default',
+            clickFn:
+                clickFn ??
+                (() => {
+                    console.log('Clicked', buttonName);
+                }),
+        };
+        return button;
+    },
+
     setClickFn(buttonName, clickFn) {
         const button = this.buttonMap[buttonName];
         if (button) {
@@ -132,7 +141,54 @@ AFRAME.registerComponent('arena-ui-buttons', {
         }
     },
 
-    makePanel() {
+    remove() {
+        this.unregisterListeners();
+    },
+};
+
+AFRAME.registerComponent('arenaui-button-panel', {
+    ...buttonBase,
+    buttonContainer: undefined,
+    schema: {
+        buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
+        demo: { type: 'boolean', default: false },
+    },
+
+    init() {
+        buttonBase.init.bind(this)();
+        this.buttonContainer = new ThreeMeshUI.Block({
+            backgroundColor: ARENAColors.bg,
+            justifyContent: 'center',
+            flexDirection: 'row',
+            fontFamily: 'Roboto',
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11,
+        });
+        this.object3DContainer.add(this.buttonContainer);
+    },
+
+    update(oldData) {
+        if (this.data.buttons !== oldData?.buttons) {
+            this.buttonContainer.remove(...Object.values(this.buttonMap).map((b) => b.el));
+            this.buttonMap = {};
+            // Buttons creation, with the options objects passed in parameters.
+            this.data.buttons.forEach((buttonName) => {
+                const button = this.createButton(buttonName);
+                this.buttonContainer.add(button);
+            });
+            this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
+        }
+        // Demo code
+        if (this.data.demo) {
+            // Demo stuff
+            this.makeDemoPanel();
+            this.buttonContainer.position.set(0, 0.6, -1.2);
+            this.buttonContainer.rotation.x = -0.55;
+        }
+    },
+
+    makeDemoPanel() {
         const { object3DContainer } = this;
 
         const meshContainer = new THREE.Group();
@@ -169,41 +225,15 @@ AFRAME.registerComponent('arena-ui-buttons', {
             });
         }
 
-        const container = new ThreeMeshUI.Block({
-            backgroundColor: ARENAColors.bg,
-            justifyContent: 'center',
-            flexDirection: 'row',
-            fontFamily: 'Roboto',
-            fontSize: 0.07,
-            padding: 0.02,
-            borderRadius: 0.11,
-        });
-
-        container.position.set(0, 0.6, -1.2);
-        container.rotation.x = -0.55;
-        object3DContainer.add(container);
-
-        // Buttons creation, with the options objects passed in parameters.
-
-        this.data.buttons.forEach((buttonName) => {
-            const button = new ThreeMeshUI.Block({ ...buttonOptions, name: buttonName });
-            button.isMeshUIButton = true;
-            button.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: buttonName, textContent: buttonName }));
-            button.set(BUTTONSTATES.default);
-            this.buttonMap[buttonName] = {
-                el: button,
-                state: 'default',
-            };
-            container.add(button);
-        });
-
-        this.setClickFn('Previous', () => {
+        this.setClickFn('Next', () => {
             currentMesh = (currentMesh + 1) % 3;
             showMesh(currentMesh);
         });
-        this.setClickFn('Next', () => {
+        this.setClickFn('Previous', () => {
             currentMesh = (currentMesh + 2) % 3;
             showMesh(currentMesh);
         });
     },
 });
+
+export default buttonBase;

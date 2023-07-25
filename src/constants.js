@@ -10,4 +10,13 @@ const ARENALayout = {
     borderRadius: 0.05,
     textImageRatio: 0.5, // ratio of text to image width
 };
-export { ARENAColors, ARENALayout };
+
+const EVENTS = {
+    INTERSECT: 'raycaster-intersected',
+    INTERSECTION: 'raycaster-intersection',
+    INTERSECT_CLEAR: 'raycaster-intersected-cleared',
+    INTERSECTION_CLEAR: 'raycaster-intersection-cleared',
+    INTERSECTION_CLOSEST_ENTITY_CHANGED: 'raycaster-closest-entity-changed',
+};
+
+export { ARENAColors, ARENALayout, EVENTS };

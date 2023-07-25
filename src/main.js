@@ -3,6 +3,7 @@
 import ThreeMeshUI from 'three-mesh-ui';
 import FontJSON from './fonts/Roboto-msdf.json';
 import FontImage from './fonts/Roboto-msdf.png';
+import { EVENTS } from './constants';
 
 import './click-listener';
 import './buttons';
@@ -31,14 +32,6 @@ function copyArray(a, b) {
         a[i] = b[i];
     }
 }
-
-const EVENTS = {
-    INTERSECT: 'raycaster-intersected',
-    INTERSECTION: 'raycaster-intersection',
-    INTERSECT_CLEAR: 'raycaster-intersected-cleared',
-    INTERSECTION_CLEAR: 'raycaster-intersection-cleared',
-    INTERSECTION_CLOSEST_ENTITY_CHANGED: 'raycaster-closest-entity-changed',
-};
 
 const isUIButtonObject = (obj) => obj.name === 'UIBackgroundBox' && obj.parent?.isMeshUIButton;
 
@@ -143,7 +136,7 @@ AFRAME.components.raycaster.Component.prototype.checkIntersections = function ch
                 // console.log('New UI Button intersected', intersections[i].object.parent.name);
                 newIntersections.push(intersections[i]);
                 newIntersectedUIEls.push(intersections[i].object);
-                newIntersectedEls.push(intersections[i].object.el);
+                newIntersectedEls.push(intersections[i].object.parent.el);
             }
         } else if (prevIntersectedEls.indexOf(intersections[i].object.el) === -1) {
             newIntersections.push(intersections[i]);
@@ -168,13 +161,17 @@ AFRAME.components.raycaster.Component.prototype.checkIntersections = function ch
         if (intersectedUIEls.indexOf(prevIntersectedUIEls[i]) !== -1) {
             continue;
         }
-        // console.log('UI Button cleared', prevIntersectedUIEls[i].parent.name, prevIntersectedUIEls[i].parent);
+        // Clean up parent el as well for AFRAME a-cursor el tracking
+        if (clearedIntersectedEls.indexOf(prevIntersectedUIEls[i].parent.el) === -1) {
+            clearedIntersectedEls.push(prevIntersectedUIEls[i].parent.el);
+        }
         clearedIntersectedUIEls.push(prevIntersectedUIEls[i]);
         prevIntersectedUIEls[i].parent.el.emit(EVENTS.INTERSECT_CLEAR, this.intersectionClearedDetail);
     }
 
     if (clearedIntersectedEls.length || clearedIntersectedUIEls.length) {
         el.emit(EVENTS.INTERSECTION_CLEAR, this.intersectionClearedDetail);
+        // console.log('emit clear', this.intersectionClearedDetail);
     }
 
     // Emit intersected on intersected entity per intersected entity.
@@ -193,6 +190,7 @@ AFRAME.components.raycaster.Component.prototype.checkIntersections = function ch
         this.intersectionDetail.UIEls = newIntersectedUIEls;
         this.intersectionDetail.intersections = newIntersections;
         el.emit(EVENTS.INTERSECTION, this.intersectionDetail);
+        // console.log('emitted raycaster intersection', this.intersectionDetail.els);
     }
 
     // Emit event when the closest intersected entity has changed.
@@ -201,7 +199,8 @@ AFRAME.components.raycaster.Component.prototype.checkIntersections = function ch
         ((prevIntersectedEls.length > 0 || prevIntersectedUIEls.length > 0) && intersections.length === 0) ||
         ((prevIntersectedEls.length || prevIntersectedUIEls.length) &&
             intersections.length &&
-            (prevIntersectedEls[0] !== intersections[0].object.el || prevIntersectedUIEls[0] !== intersections[0]))
+            (prevIntersectedEls[0] !== intersections[0].object.el ||
+                prevIntersectedUIEls[0] !== intersections[0].object))
     ) {
         this.intersectionDetail.els = this.intersectedEls;
         this.intersectionDetail.UIEls = this.intersectedUIEls;

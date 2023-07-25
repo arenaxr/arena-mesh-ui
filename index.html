@@ -38,7 +38,9 @@
                 widthScale: 1.5"
             ></a-entity>
 
-            <a-entity id='test-button-panel' arena-ui-buttons='buttons:Previous,Next' click-listener position='3 0 -2'></a-entity>
+            <a-entity id='test-button-panel' arenaui-button-panel='buttons:Previous,Next;demo:True' click-listener position='3 0 -2'></a-entity>
+
+            <a-entity id='test-button-panel2' arenaui-button-panel='buttons:A,B,C,D' click-listener position='5 1 -2'></a-entity>
             <a-camera
                 id="my-camera"
                 near="0.1"
@@ -57,6 +59,7 @@
                     raycaster="objects:[click-listener],[click-listener-local]"
                 ></a-entity>
             </a-camera>
+            <a-box position='0 0 0' click-listener></a-box>
         </a-scene>
         <script type="module" src="/src/main.js"></script>
     </body>
