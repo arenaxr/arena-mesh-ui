@@ -172,7 +172,7 @@ AFRAME.registerComponent('arena-ui-card', {
             closeButton.set({ fontSize: 0.04 });
             buttonContainer.add(closeButton);
             container.add(buttonContainer);
-            el.setAttribute('click-listener', 'enabled: true');
+            el.setAttribute('click-listener-local', 'enabled: true');
         }
 
         object3DContainer.add(container);

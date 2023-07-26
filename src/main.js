@@ -5,7 +5,6 @@ import FontJSON from './fonts/Roboto-msdf.json';
 import FontImage from './fonts/Roboto-msdf.png';
 import { EVENTS } from './constants';
 
-import './click-listener';
 import './buttons';
 import './card';
 import './prompt';
