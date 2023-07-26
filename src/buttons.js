@@ -6,33 +6,34 @@ import { ARENAColors, EVENTS } from './constants';
 const buttonOptions = {
     width: 'auto',
     height: 'auto',
-    padding: 0.05,
     justifyContent: 'center',
-    offset: 0.05,
+    offset: 0.04,
     margin: 0.02,
     borderRadius: 0.075,
     textAlign: 'center',
+    padding: [0.015, 0.075],
+    backgroundOpacity: 0.9,
+    fontSize: 0.075,
 };
 
 const buttonTextOptions = {
     offset: 0,
-    padding: [0.015, 0.05],
+    padding: [0.005, 0],
+    color: ARENAColors.buttonText,
 };
 
 const BUTTONSTATES = {
     default: {
-        offset: 0.035,
-        backgroundColor: new THREE.Color(0xff0000),
-        backgroundOpacity: 0.3,
-        color: ARENAColors.text,
-        padding: [0.015, 0.05],
+        offset: 0.03,
+        backgroundColor: ARENAColors.buttonBg,
     },
     hover: {
-        backgroundColor: new THREE.Color(0x0000ff),
+        offset: 0.03,
+        backgroundColor: ARENAColors.buttonBgHover,
     },
     selected: {
-        offset: 0.02,
-        backgroundColor: new THREE.Color(0x00ff00),
+        offset: 0.015,
+        backgroundColor: ARENAColors.buttonBgSelected,
     },
 };
 
@@ -43,6 +44,7 @@ const buttonBase = {
     init() {
         this.buttonMap = {};
         this.object3DContainer = new THREE.Object3D();
+        this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
         this.registerListeners();
     },
 
@@ -148,9 +150,11 @@ const buttonBase = {
 
 AFRAME.registerComponent('arenaui-button-panel', {
     ...buttonBase,
+
     buttonContainer: undefined,
     schema: {
         buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
+        vertical: { type: 'boolean', default: false },
         demo: { type: 'boolean', default: false },
     },
 
@@ -159,9 +163,8 @@ AFRAME.registerComponent('arenaui-button-panel', {
         this.buttonContainer = new ThreeMeshUI.Block({
             backgroundColor: ARENAColors.bg,
             justifyContent: 'center',
-            flexDirection: 'row',
+            alignItems: 'stretch',
             fontFamily: 'Roboto',
-            fontSize: 0.07,
             padding: 0.02,
             borderRadius: 0.11,
         });
@@ -178,6 +181,10 @@ AFRAME.registerComponent('arenaui-button-panel', {
                 this.buttonContainer.add(button);
             });
             this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
+        }
+        if (this.data.vertical !== oldData?.vertical) {
+            this.buttonContainer.set({ flexDirection: this.data.vertical ? 'column' : 'row' });
+            console.log('flexDirection', this.buttonContainer.flexDirection);
         }
         // Demo code
         if (this.data.demo) {
