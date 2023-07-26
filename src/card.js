@@ -2,17 +2,21 @@
 
 import ThreeMeshUI from 'three-mesh-ui';
 import { ARENAColors, ARENALayout } from './constants';
+import buttonBase from './buttons';
 
 const borderRadiusLeft = [ARENALayout.borderRadius, 0, 0, ARENALayout.borderRadius];
 const borderRadiusRight = [0, ARENALayout.borderRadius, ARENALayout.borderRadius, 0];
 
 AFRAME.registerComponent('arena-ui-card', {
+    ...buttonBase,
+
     title: undefined,
     img: undefined,
     imgContainer: undefined,
     body: undefined,
     imgCaption: undefined,
     bodyContainer: undefined,
+
     schema: {
         title: { type: 'string', default: '' },
         body: { type: 'string', default: '' },
@@ -23,21 +27,18 @@ AFRAME.registerComponent('arena-ui-card', {
         imgSize: { type: 'string', default: 'cover' }, // ['cover', 'contain', 'stretch']
         fontSize: { type: 'number', default: 0.035 },
         widthScale: { type: 'number', default: 1 }, // Scale factor
+        closeButton: { type: 'boolean', default: false },
     },
 
     init() {
-        const {
-            data,
-            el: { object3D },
-        } = this;
+        buttonBase.init.bind(this)();
+
+        const { data, el, object3DContainer } = this;
+
         const container = new ThreeMeshUI.Block({
             ref: 'container',
-            padding: ARENALayout.containerPadding,
             fontFamily: 'Roboto',
             color: ARENAColors.text,
-            backgroundColor: '#000000',
-            backgroundOpacity: 0.25,
-            borderRadius: ARENALayout.borderRadius,
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
@@ -133,8 +134,11 @@ AFRAME.registerComponent('arena-ui-card', {
         textContainer.add(textBody);
 
         const contentContainer = new ThreeMeshUI.Block({
-            padding: 0,
+            padding: ARENALayout.containerPadding,
             margin: 0,
+            backgroundColor: '#000000',
+            backgroundOpacity: 0.25,
+            borderRadius: ARENALayout.borderRadius,
             flexDirection: 'row',
             alignItems: 'stretch',
         });
@@ -147,10 +151,32 @@ AFRAME.registerComponent('arena-ui-card', {
             contentContainer.add(textContainer);
         }
 
-        this.container = contentContainer;
+        this.container = contentContainer; // Reference for changing attributes
         container.add(contentContainer);
 
-        object3D.add(container);
+        if (data.closeButton) {
+            const buttonContainer = new ThreeMeshUI.Block({
+                backgroundColor: '#000000',
+                backgroundOpacity: 0.25,
+                justifyContent: 'center',
+                flexDirection: 'row',
+                fontFamily: 'Roboto',
+                padding: 0,
+                offset: 0,
+                margin: [0.025, 0, 0, 0],
+                borderRadius: 0.11,
+            });
+            const closeButton = this.createButton('Close', () => {
+                this.el.remove();
+            });
+            closeButton.set({ fontSize: 0.04 });
+            buttonContainer.add(closeButton);
+            container.add(buttonContainer);
+            el.setAttribute('click-listener', 'enabled: true');
+        }
+
+        object3DContainer.add(container);
+        el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
     },
 
     update(oldData) {
