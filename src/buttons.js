@@ -45,6 +45,7 @@ const buttonBase = {
         this.buttonMap = {};
         this.object3DContainer = new THREE.Object3D();
         this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
+        this.el.setAttribute('click-listener', 'enabled: true');
         this.registerListeners();
     },
 
