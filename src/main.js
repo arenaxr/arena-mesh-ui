@@ -8,6 +8,7 @@ import { EVENTS } from './constants';
 import './click-listener';
 import './buttons';
 import './card';
+import './prompt';
 
 AFRAME.registerSystem('arena-ui', {
     init() {

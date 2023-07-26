@@ -42,7 +42,11 @@
 
             <a-entity id='test-button-panel2' arenaui-button-panel='buttons:AAAA,BBB,CC,D;vertical:true' position='5 1 -2'></a-entity>
 
-            <a-entity id='test-button-panel2' arenaui-button-panel='buttons:AAAA,BBB,CC,D;vertical:true' click-listener position='5 1 -2'></a-entity>
+            <a-entity id='test-prompt' position='7 1 -2' arenaui-prompt="title:Confirmation;
+            description:Confirmation occurs when the system requires a feedback from user that keeps one operation going or return back to the previous step. This occurs when important steps are taken.;
+            width: 1.25"
+            ></a-entity>
+
             <a-camera
                 id="my-camera"
                 near="0.1"

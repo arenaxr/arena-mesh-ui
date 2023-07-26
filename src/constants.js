@@ -20,6 +20,7 @@ const ARENAColorsDark = {
 
 const ARENALayout = {
     containerPadding: 0.025,
+    contentPadding: 0.1,
     borderRadius: 0.05,
     textImageRatio: 0.5, // ratio of text to image width
 };
