@@ -22,7 +22,6 @@
     "format": "prettier -w ."
   },
   "devDependencies": {
-    "aframe": "^1.4.2",
     "eslint": "^8.44.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.8.0",
