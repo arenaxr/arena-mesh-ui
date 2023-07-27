@@ -107,7 +107,7 @@ const buttonBase = {
             const curSelectedButton = this.buttonMap[evt.detail.intersection?.object.parent.name];
             // If this is the same button we clicked on, then call its function
             if (curSelectedButton && curSelectedButton.selector === evt.detail.cursorEl) {
-                curSelectedButton.clickFn();
+                curSelectedButton.clickFn(evt.detail);
             }
             // Clear previously selected button from this cursor in any case
             const prevSelectedButton = Object.values(this.buttonMap).find((b) => b.selector === evt.detail.cursorEl);
@@ -185,7 +185,6 @@ AFRAME.registerComponent('arenaui-button-panel', {
         }
         if (this.data.vertical !== oldData?.vertical) {
             this.buttonContainer.set({ flexDirection: this.data.vertical ? 'column' : 'row' });
-            console.log('flexDirection', this.buttonContainer.flexDirection);
         }
         // Demo code
         if (this.data.demo) {
