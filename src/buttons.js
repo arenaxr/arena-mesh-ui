@@ -1,6 +1,6 @@
 /* global AFRAME, THREE */
 import ThreeMeshUI from 'three-mesh-ui';
-import { ARENAColors, EVENTS } from './constants';
+import { ARENAColors, ARENALayout, EVENTS } from './constants';
 
 // BUTTONS
 const buttonOptions = {
@@ -156,10 +156,12 @@ AFRAME.registerComponent('arenaui-button-panel', {
     schema: {
         buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
         vertical: { type: 'boolean', default: false },
+        title: { type: 'string', default: '' },
         demo: { type: 'boolean', default: false },
     },
 
     init() {
+        const { data } = this;
         buttonBase.init.bind(this)();
         this.buttonContainer = new ThreeMeshUI.Block({
             backgroundSide: THREE.DoubleSide,
@@ -170,11 +172,23 @@ AFRAME.registerComponent('arenaui-button-panel', {
             padding: 0.02,
             borderRadius: 0.11,
         });
+        if (data.title) {
+            const title = new ThreeMeshUI.Text({
+                textAlign: 'center',
+                fontSize: 0.075,
+                margin: ARENALayout.containerPadding * 2,
+                fontColor: ARENAColors.buttonText,
+                textContent: data.title,
+            });
+            this.buttonContainer.add(title);
+            this.title = title;
+        }
         this.object3DContainer.add(this.buttonContainer);
     },
 
     update(oldData) {
-        if (this.data.buttons !== oldData?.buttons) {
+        const { data } = this;
+        if (data.buttons !== oldData?.buttons) {
             this.buttonContainer.remove(...Object.values(this.buttonMap).map((b) => b.el));
             this.buttonMap = {};
             // Buttons creation, with the options objects passed in parameters.
@@ -187,8 +201,11 @@ AFRAME.registerComponent('arenaui-button-panel', {
         if (this.data.vertical !== oldData?.vertical) {
             this.buttonContainer.set({ flexDirection: this.data.vertical ? 'column' : 'row' });
         }
+        if (data.title !== oldData?.title && this.title) {
+            this.title.set({ textContent: data.title });
+        }
         // Demo code
-        if (this.data.demo) {
+        if (data.demo) {
             // Demo stuff
             this.makeDemoPanel();
             this.buttonContainer.position.set(0, 0.6, -1.2);
