@@ -44,7 +44,7 @@ AFRAME.registerComponent('arenaui-prompt', {
             backgroundColor: ARENAColors.bg,
             backgroundOpacity: 0.8,
             flexDirection: 'column',
-            justifyContent: 'space-evenly',
+            justifyContent: 'center',
         });
         this.container = contentContainer; // Ref to change width later
 
@@ -69,7 +69,7 @@ AFRAME.registerComponent('arenaui-prompt', {
                 width: '100%',
                 fontSize: 0.035 * 2,
                 alignItems: 'start',
-                textAlign: 'justify',
+                textAlign: 'center',
                 backgroundOpacity: 0,
                 textContent: data.description,
             });
