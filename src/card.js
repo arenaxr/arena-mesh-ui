@@ -20,7 +20,7 @@ AFRAME.registerComponent('arena-ui-card', {
     schema: {
         title: { type: 'string', default: '' },
         body: { type: 'string', default: '' },
-        bodyAlign: { type: 'string', default: 'justify' }, // ['center', 'left', 'right', 'justify']
+        bodyAlign: { type: 'string', default: 'left' }, // ['center', 'left', 'right', 'justify']
         img: { type: 'string', default: '' },
         imgCaption: { type: 'string', default: '' },
         imgDirection: { type: 'string', default: 'right' },
@@ -101,7 +101,7 @@ AFRAME.registerComponent('arena-ui-card', {
             width: data.img
                 ? ARENALayout.textImageRatio * data.widthScale
                 : (1 + ARENALayout.textImageRatio) * data.widthScale,
-            padding: [0.04, 0.06],
+            padding: 0.1,
             backgroundColor: ARENAColors.bg,
             backgroundOpacity: 0.8,
             flexDirection: 'column',
