@@ -153,6 +153,7 @@ AFRAME.registerComponent('arenaui-button-panel', {
     ...buttonBase,
 
     buttonContainer: undefined,
+    shadowContainer: undefined,
     schema: {
         buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
         vertical: { type: 'boolean', default: false },
@@ -163,27 +164,43 @@ AFRAME.registerComponent('arenaui-button-panel', {
     init() {
         const { data } = this;
         buttonBase.init.bind(this)();
-        this.buttonContainer = new ThreeMeshUI.Block({
+        const shadowContainer = new ThreeMeshUI.Block({
+            backgroundColor: '#000000',
+            backgroundOpacity: 0.25,
+            padding: ARENALayout.containerPadding,
+            borderRadius: ARENALayout.borderRadius,
+        });
+        this.shadowContainer = shadowContainer;
+
+        const buttonOuterContainer = new ThreeMeshUI.Block({
             backgroundSide: THREE.DoubleSide,
             backgroundColor: ARENAColors.bg,
+            backgroundOpacity: 0.8,
             justifyContent: 'center',
             alignItems: 'stretch',
             fontFamily: 'Roboto',
-            padding: 0.02,
-            borderRadius: 0.11,
+            padding: [ARENALayout.containerPadding * 2, ARENALayout.containerPadding],
+            borderRadius: ARENALayout.borderRadius,
+            flexDirection: 'column',
         });
+        shadowContainer.add(buttonOuterContainer);
+
         if (data.title) {
             const title = new ThreeMeshUI.Text({
                 textAlign: 'center',
                 fontSize: 0.075,
                 margin: ARENALayout.containerPadding * 2,
-                fontColor: ARENAColors.buttonText,
+                fontColor: ARENAColors.buttonText * 1.25,
                 textContent: data.title,
             });
-            this.buttonContainer.add(title);
+            buttonOuterContainer.add(title);
             this.title = title;
         }
-        this.object3DContainer.add(this.buttonContainer);
+        this.buttonContainer = new ThreeMeshUI.Block({
+            alignItems: 'stretch',
+        });
+        buttonOuterContainer.add(this.buttonContainer);
+        this.object3DContainer.add(shadowContainer);
     },
 
     update(oldData) {
@@ -208,8 +225,8 @@ AFRAME.registerComponent('arenaui-button-panel', {
         if (data.demo) {
             // Demo stuff
             this.makeDemoPanel();
-            this.buttonContainer.position.set(0, 0.6, -1.2);
-            this.buttonContainer.rotation.x = -0.55;
+            this.shadowContainer.position.set(0, 0.6, -1.2);
+            this.shadowContainer.rotation.x = -0.55;
         }
     },
 
