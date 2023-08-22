@@ -17,7 +17,7 @@
             <a-entity
                 id="card-example"
                 position="0 1.8 -1.5"
-                arena-ui-card="title:ARENA Title Right;
+                arenaui-card="title:ARENA Title Right;
                 body: The Augmented Reality Edge Network Architecture (ARENA) is a platform designed to simplify programming where there is a mix of virtual and physical systems, with locality and pervasive sensing as first-class citizens. ARENA makes it easy to create and host multiple applications that interact with users and other agents in an immersive 3D environment created inside a browser.;
                 img: https://docs.arenaxr.org/assets/img/intro/robot-arm.png;
                 imgCaption: Look it's a robot;
@@ -28,7 +28,7 @@
             <a-entity
                 id="card-example2"
                 position="-3 1.8 -1.5"
-                arena-ui-card="title:ARENA Title Left;
+                arenaui-card="title:ARENA Title Left;
                 body: The Augmented Reality Edge Network Architecture (ARENA) is a platform designed to simplify programming where there is a mix of virtual and physical systems, with locality and pervasive sensing as first-class citizens.;
                 bodyAlign: left;
                 img: https://docs.arenaxr.org/assets/img/intro/robot-arm.png;
@@ -38,9 +38,9 @@
                 widthScale: 1.5"
             ></a-entity>
 
-            <a-entity id='test-button-panel' arenaui-button-panel='buttons:Previous,Next;demo:True' position='3 0 -2'></a-entity>
+            <a-entity id='test-button-panel' arenaui-button-panel='title:;buttons:Previous,Next;demo:True' position='3 0 -2'></a-entity>
 
-            <a-entity id='test-button-panel2' arenaui-button-panel='title:My button menu;buttons:AAAA,BBB,CC,D;vertical:true' position='5 1 -2'></a-entity>
+            <a-entity id='test-button-panel2' arenaui-button-panel='title:My button menu text goes here;buttons:Button Option 1,Button Option 2,Button Option 3,D;vertical:true;font:Roboto-Mono' position='5 1 -2'></a-entity>
 
             <a-entity id='test-prompt' position='7 1 -2' arenaui-prompt="title:Confirmation;
             description:Confirmation occurs when the system requires a feedback from user that keeps one operation going or return back to the previous step. This occurs when important steps are taken.;

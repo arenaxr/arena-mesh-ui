@@ -53,7 +53,7 @@ AFRAME.registerComponent('click-listener', {
 
         if ('cursorEl' in evt.detail) {
             // original click event; simply publish to MQTT
-            console.log(evt.detail.intersection?.object); // .intersection?.object.parent.name);
+            // console.log(evt.detail.intersection?.object); // .intersection?.object.parent.name);
         }
     },
 });

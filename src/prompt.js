@@ -1,6 +1,6 @@
 /* global AFRAME */
 import ThreeMeshUI from 'three-mesh-ui';
-import { ARENAColors, ARENALayout } from './constants';
+import { ARENAColors, ARENALayout, ARENATypography } from './constants';
 import buttonBase from './buttons';
 
 AFRAME.registerComponent('arenaui-prompt', {
@@ -15,6 +15,7 @@ AFRAME.registerComponent('arenaui-prompt', {
         description: { type: 'string', default: '' },
         buttons: { type: 'array', default: ['Confirm', 'Cancel'] },
         width: { type: 'number', default: 1.5 },
+        font: { type: 'string', default: 'Roboto' },
     },
     init() {
         buttonBase.init.bind(this)();
@@ -23,13 +24,12 @@ AFRAME.registerComponent('arenaui-prompt', {
 
         const container = new ThreeMeshUI.Block({
             ref: 'container',
-            fontFamily: 'Roboto',
             color: ARENAColors.text,
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#000000',
-            backgroundOpacity: 0.25,
+            backgroundColor: ARENAColors.textBg,
+            backgroundOpacity: ARENAColors.textBgOpacity,
             padding: ARENALayout.containerPadding,
             margin: 0,
             borderRadius: ARENALayout.borderRadius,
@@ -37,21 +37,23 @@ AFRAME.registerComponent('arenaui-prompt', {
         object3DContainer.add(container);
 
         const contentContainer = new ThreeMeshUI.Block({
+            fontFamily: data.font,
+            backgroundSide: THREE.DoubleSide,
             width: data.width,
             padding: ARENALayout.contentPadding,
             margin: 0,
             borderRadius: ARENALayout.borderRadius,
             backgroundColor: ARENAColors.bg,
-            backgroundOpacity: 0.8,
+            backgroundOpacity: ARENAColors.bgOpacity,
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'space-evenly',
         });
         this.container = contentContainer; // Ref to change width later
 
         if (data.title) {
             const title = new ThreeMeshUI.Text({
                 textAlign: 'center',
-                fontSize: 0.035 * 4,
+                fontSize: ARENATypography.body * ARENATypography.bigTitleRatio,
                 margin: [
                     0,
                     ARENALayout.containerPadding,
@@ -67,7 +69,7 @@ AFRAME.registerComponent('arenaui-prompt', {
         if (data.description) {
             const description = new ThreeMeshUI.Text({
                 width: '100%',
-                fontSize: 0.035 * 2,
+                fontSize: ARENATypography.body * ARENATypography.descriptionRatio,
                 alignItems: 'start',
                 textAlign: 'center',
                 backgroundOpacity: 0,
@@ -79,13 +81,13 @@ AFRAME.registerComponent('arenaui-prompt', {
         }
 
         this.buttonContainer = new ThreeMeshUI.Block({
-            margin: [0.05, 0, 0, 0],
+            margin: [ARENALayout.buttonMargin * 2, 0, 0, 0],
             justifyContent: 'center',
             alignItems: 'stretch',
             flexDirection: 'row',
-            fontFamily: 'Roboto',
-            padding: 0.02,
-            borderRadius: 0.11,
+            fontFamily: data.font,
+            padding: ARENALayout.containerPadding,
+            borderRadius: ARENALayout.buttonBorderRadius,
         });
         contentContainer.add(this.buttonContainer);
 
@@ -114,6 +116,9 @@ AFRAME.registerComponent('arenaui-prompt', {
                 this.buttonContainer.add(button);
             });
             this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
+        }
+        if (data.font !== oldData.font) {
+            this.container?.set({ fontFamily: data.font });
         }
         this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME
     },

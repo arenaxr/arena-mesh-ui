@@ -1,13 +1,13 @@
 /* global AFRAME, THREE */
 
 import ThreeMeshUI from 'three-mesh-ui';
-import { ARENAColors, ARENALayout } from './constants';
+import { ARENAColors, ARENALayout, ARENATypography } from './constants';
 import buttonBase from './buttons';
 
 const borderRadiusLeft = [ARENALayout.borderRadius, 0, 0, ARENALayout.borderRadius];
 const borderRadiusRight = [0, ARENALayout.borderRadius, ARENALayout.borderRadius, 0];
 
-AFRAME.registerComponent('arena-ui-card', {
+AFRAME.registerComponent('arenaui-card', {
     ...buttonBase,
 
     title: undefined,
@@ -16,6 +16,8 @@ AFRAME.registerComponent('arena-ui-card', {
     body: undefined,
     imgCaption: undefined,
     bodyContainer: undefined,
+    outerMeshContainer: undefined,
+    closeButton: undefined,
 
     schema: {
         title: { type: 'string', default: '' },
@@ -25,9 +27,10 @@ AFRAME.registerComponent('arena-ui-card', {
         imgCaption: { type: 'string', default: '' },
         imgDirection: { type: 'string', default: 'right' },
         imgSize: { type: 'string', default: 'cover' }, // ['cover', 'contain', 'stretch']
-        fontSize: { type: 'number', default: 0.035 },
+        fontSize: { type: 'number', default: ARENATypography.body },
         widthScale: { type: 'number', default: 1 }, // Scale factor
         closeButton: { type: 'boolean', default: false },
+        font: { type: 'string', default: 'Roboto' },
     },
 
     init() {
@@ -37,19 +40,21 @@ AFRAME.registerComponent('arena-ui-card', {
 
         const container = new ThreeMeshUI.Block({
             ref: 'container',
-            fontFamily: 'Roboto',
+            fontFamily: data.font,
             color: ARENAColors.text,
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
         });
+        this.outerMeshContainer = container;
 
         let imgContainerBlock;
         if (data.img) {
             imgContainerBlock = new ThreeMeshUI.Block({
+                backgroundSide: THREE.DoubleSide,
                 width: data.widthScale,
                 backgroundColor: ARENAColors.bg,
-                backgroundOpacity: 0.8,
+                backgroundOpacity: ARENAColors.bgOpacity,
                 borderRadius: data.imgDirection === 'right' ? borderRadiusRight : borderRadiusLeft,
             });
             this.imgContainer = imgContainerBlock;
@@ -62,7 +67,7 @@ AFRAME.registerComponent('arena-ui-card', {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'end',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: ARENAColors.captionBg,
                 backgroundOpacity: 1,
                 backgroundSize: data.imgSize,
             });
@@ -75,20 +80,12 @@ AFRAME.registerComponent('arena-ui-card', {
                 });
             });
 
-            if (data.imgCaption) {
-                const caption = new ThreeMeshUI.Text({
-                    width: 'auto',
-                    textAlign: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: ARENAColors.bg,
-                    textContent: data.imgCaption,
-                    fontSize: data.fontSize,
-                    padding: ARENALayout.containerPadding,
-                    margin: [0, 0, ARENALayout.containerPadding, 0],
-                    borderRadius: ARENALayout.borderRadius / 2,
-                });
-                imgSubBock.add(caption);
-                this.imgCaption = caption;
+            if (data.img && data.imgCaption) {
+                if (data.imgCaption) {
+                    this.addImgCaption();
+                } else if (this.img && this.imgCaption) {
+                    this.img.remove(this.imgCaption);
+                }
             }
         }
 
@@ -98,12 +95,13 @@ AFRAME.registerComponent('arena-ui-card', {
         }
 
         const textContainer = new ThreeMeshUI.Block({
+            backgroundSide: THREE.DoubleSide,
             width: data.img
                 ? ARENALayout.textImageRatio * data.widthScale
                 : (1 + ARENALayout.textImageRatio) * data.widthScale,
-            padding: 0.1,
+            padding: ARENALayout.contentPadding,
             backgroundColor: ARENAColors.bg,
-            backgroundOpacity: 0.8,
+            backgroundOpacity: ARENAColors.bgOpacity,
             flexDirection: 'column',
             justifyContent: 'space-evenly',
             borderRadius: textBorderRadius,
@@ -113,7 +111,7 @@ AFRAME.registerComponent('arena-ui-card', {
         if (data.title) {
             const title = new ThreeMeshUI.Text({
                 textAlign: 'center',
-                fontSize: data.fontSize * 1.4,
+                fontSize: data.fontSize * ARENATypography.titleRatio,
                 margin: [0, ARENALayout.containerPadding, ARENALayout.containerPadding, ARENALayout.containerPadding],
                 textContent: data.title,
             });
@@ -136,8 +134,8 @@ AFRAME.registerComponent('arena-ui-card', {
         const contentContainer = new ThreeMeshUI.Block({
             padding: ARENALayout.containerPadding,
             margin: 0,
-            backgroundColor: '#000000',
-            backgroundOpacity: 0.25,
+            backgroundColor: ARENAColors.textBg,
+            backgroundOpacity: ARENAColors.textBgOpacity,
             borderRadius: ARENALayout.borderRadius,
             flexDirection: 'row',
             alignItems: 'stretch',
@@ -155,24 +153,7 @@ AFRAME.registerComponent('arena-ui-card', {
         container.add(contentContainer);
 
         if (data.closeButton) {
-            const buttonContainer = new ThreeMeshUI.Block({
-                backgroundColor: '#000000',
-                backgroundOpacity: 0.25,
-                justifyContent: 'center',
-                flexDirection: 'row',
-                fontFamily: 'Roboto',
-                padding: 0,
-                offset: 0,
-                margin: [0.025, 0, 0, 0],
-                borderRadius: 0.11,
-            });
-            const closeButton = this.createButton('Close', () => {
-                this.el.remove();
-            });
-            closeButton.set({ fontSize: 0.04 });
-            buttonContainer.add(closeButton);
-            container.add(buttonContainer);
-            el.setAttribute('click-listener-local', 'enabled: true');
+            this.addCloseButton();
         }
 
         object3DContainer.add(container);
@@ -182,10 +163,13 @@ AFRAME.registerComponent('arena-ui-card', {
     update(oldData) {
         const { data } = this;
         if (data.title !== oldData.title) {
-            this.title.set({ textContent: data.title });
+            this.title?.set({ textContent: data.title });
         }
         if (data.body !== oldData.body) {
-            this.body.set({ textContent: data.body });
+            this.body?.set({ textContent: data.body });
+        }
+        if (data.bodyAlign !== oldData.bodyAlign) {
+            this.body?.set({ textAlign: data.bodyAlign });
         }
         if (data.img !== oldData.img) {
             new THREE.TextureLoader().load(data.img, (texture) => {
@@ -194,12 +178,18 @@ AFRAME.registerComponent('arena-ui-card', {
                 });
             });
         }
-        if (data.imgCaption !== oldData.imgCaption) {
-            this.imgCaption.set({ textContent: data.imgCaption });
+        if (data.img && data.imgCaption !== oldData.imgCaption) {
+            if (data.imgCaption && oldData.imgCaption) {
+                this.imgCaption?.set({ textContent: data.imgCaption });
+            } else if (!data.imgCaption && oldData.imgCaption) {
+                this.img?.remove(this.imgCaption);
+            } else if (data.imgCaption && oldData.imgCaption === '') {
+                this.addImgCaption();
+            }
         }
         if (data.imgDirection !== oldData.imgDirection) {
             if (data.img) {
-                this.imgContainer.set({
+                this.imgContainer?.set({
                     borderRadius:
                         data.imgDirection === 'right'
                             ? [0, ARENALayout.borderRadius, ARENALayout.borderRadius, 0]
@@ -212,26 +202,84 @@ AFRAME.registerComponent('arena-ui-card', {
                 } else {
                     this.container.set({ flexDirection: 'row-reverse' });
                 }
-                this.bodyContainer.set({ borderRadius: textBorderRadius });
+                this.bodyContainer?.set({ borderRadius: textBorderRadius });
             }
         }
-        if (data.imgSize !== oldData.imgSize) {
-            this.img.set({ backgroundSize: data.imgSize });
+        if (data.img && data.imgSize !== oldData.imgSize) {
+            this.img?.set({ backgroundSize: data.imgSize });
         }
         if (data.fontSize !== oldData.fontSize) {
-            this.title.set({ fontSize: data.fontSize * 1.4 });
-            this.body.set({ fontSize: data.fontSize });
-            if (this.img && this.caption) {
-                this.caption.set({ fontSize: data.fontSize });
+            this.title?.set({ fontSize: data.fontSize * ARENATypography.titleRatio });
+            this.body?.set({ fontSize: data.fontSize });
+            if (this.img) {
+                this.caption?.set({ fontSize: data.fontSize });
             }
         }
         if (data.widthScale !== oldData.widthScale) {
-            this.imgContainer.set({ width: data.widthScale });
-            this.body.set({
+            this.imgContainer?.set({ width: data.widthScale });
+            this.body?.set({
                 width: data.img
                     ? ARENALayout.textImageRatio * data.widthScale
                     : (1 + ARENALayout.textImageRatio) * data.widthScale,
             });
         }
+        if (this.closeButton && data.closeButton !== oldData.closeButton) {
+            if (data.closeButton && oldData.closeButton === false) {
+                this.addCloseButton();
+            } else if (!data.closeButton && oldData.closeButton) {
+                this.removeCloseButton();
+            }
+        }
+        if (data.font !== oldData.font) {
+            this.outerMeshContainer?.set({ fontFamily: data.font });
+        }
+    },
+
+    addImgCaption() {
+        const { data, img } = this;
+        const caption = new ThreeMeshUI.Text({
+            width: 'auto',
+            textAlign: 'center',
+            justifyContent: 'center',
+            backgroundColor: ARENAColors.bg,
+            textContent: data.imgCaption,
+            fontSize: data.fontSize,
+            padding: ARENALayout.containerPadding,
+            margin: [0, 0, ARENALayout.containerPadding, 0],
+            borderRadius: ARENALayout.borderRadius / 2,
+        });
+        img.add(caption);
+        this.imgCaption = caption;
+    },
+
+    addCloseButton() {
+        const { data, el, outerMeshContainer } = this;
+        const buttonContainer = new ThreeMeshUI.Block({
+            backgroundColor: ARENAColors.textBg,
+            backgroundOpacity: ARENAColors.textBgOpacity,
+            justifyContent: 'center',
+            flexDirection: 'row',
+            fontFamily: data.font,
+            padding: 0,
+            offset: 0,
+            margin: [ARENALayout.containerPadding, 0, 0, 0],
+            borderRadius: ARENALayout.borderRadius,
+        });
+        const closeButton = this.createButton('Close', () => {
+            console.log('CLicked close button for card', this.el.id);
+            this.el.remove();
+        });
+        closeButton.set({ fontSize: ARENATypography.buttonSmall });
+        this.closeButton = buttonContainer;
+        buttonContainer.add(closeButton);
+        outerMeshContainer.add(buttonContainer);
+        el.setAttribute('click-listener-local', 'enabled: true');
+    },
+
+    removeCloseButton() {
+        const { el, outerMeshContainer } = this;
+        outerMeshContainer.remove(this.closeButton);
+        this.closeButton = undefined;
+        el.removeAttribute('click-listener-local');
     },
 });
