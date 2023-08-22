@@ -26,14 +26,17 @@ const BUTTONSTATES = {
     default: {
         offset: ARENALayout.buttonDefaultOffset,
         backgroundColor: ARENAColors.buttonBg,
+        borderColor: ARENAColors.buttonBg,
     },
     hover: {
         offset: ARENALayout.buttonDefaultOffset,
         backgroundColor: ARENAColors.buttonBgHover,
+        borderColor: ARENAColors.buttonBgHover,
     },
     selected: {
         offset: ARENALayout.buttonDownOffset,
         backgroundColor: ARENAColors.buttonBgSelected,
+        borderColor: ARENAColors.buttonBgSelected,
     },
 };
 
@@ -114,13 +117,32 @@ const buttonBase = {
         }
     },
 
-    createButton(buttonName, clickFn) {
-        const button = new ThreeMeshUI.Block({ ...buttonOptions, name: buttonName });
+    createButton(buttonEl, index, clickFn) {
+        const button = new ThreeMeshUI.Block(buttonOptions);
         button.isMeshUIButton = true;
-        button.add(new ThreeMeshUI.Text({ ...buttonTextOptions, name: buttonName, textContent: buttonName }));
-        button.set(BUTTONSTATES.default);
+        const buttonName = typeof buttonEl === 'string' ? buttonEl : buttonEl.name;
+        // Handles legacy string values
+        if (buttonEl.img) {
+            // still safe for string values
+            new THREE.TextureLoader().load(buttonEl.img, (texture) => {
+                button.set({
+                    backgroundImage: texture,
+                    backgroundSize: 'contain',
+                    backgroundOpacity: 1,
+                    height: buttonEl.height ?? buttonEl.size,
+                    width: buttonEl.width ?? buttonEl.size,
+                    padding: 0,
+                    borderWidth: ARENALayout.buttonImgBorder,
+                    borderRadius: buttonEl.borderRadius ?? ARENALayout.buttonBorderRadius,
+                });
+            });
+        } else {
+            button.add(new ThreeMeshUI.Text({ ...buttonTextOptions, textContent: buttonName }));
+        }
+        button.set({ name: buttonName, ...BUTTONSTATES.default });
         this.buttonMap[buttonName] = {
             el: button,
+            index,
             state: 'default',
             clickFn:
                 clickFn ??
@@ -203,8 +225,8 @@ AFRAME.registerComponent('arenaui-button-panel', {
             this.buttonContainer.remove(...Object.values(this.buttonMap).map((b) => b.el));
             this.buttonMap = {};
             // Buttons creation, with the options objects passed in parameters.
-            data.buttons.forEach((buttonName) => {
-                const button = this.createButton(buttonName);
+            data.buttons.forEach((buttonEl, index) => {
+                const button = this.createButton(buttonEl, index);
                 this.buttonContainer.add(button);
             });
             this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME

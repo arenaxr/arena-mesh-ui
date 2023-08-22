@@ -111,8 +111,8 @@ AFRAME.registerComponent('arenaui-prompt', {
             this.buttonContainer.remove(...Object.values(this.buttonMap).map((b) => b.el));
             this.buttonMap = {};
             // Buttons creation, with the options objects passed in parameters.
-            this.data.buttons.forEach((buttonName) => {
-                const button = this.createButton(buttonName);
+            this.data.buttons.forEach((buttonEl, index) => {
+                const button = this.createButton(buttonEl, index);
                 this.buttonContainer.add(button);
             });
             this.el.setObject3D('mesh', this.object3DContainer); // Make sure to update for AFRAME

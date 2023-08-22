@@ -42,6 +42,15 @@
 
             <a-entity id='test-button-panel2' arenaui-button-panel='title:My button menu text goes here;buttons:Button Option 1,Button Option 2,Button Option 3,D;vertical:true;font:Roboto-Mono' position='5 1 -2'></a-entity>
 
+            <a-entity id='test-button-panel3' arenaui-button-panel='vertical:true' position='5 2.5 -2'></a-entity>
+            <script>
+                window.setTimeout(() => {
+                    document.getElementById('test-button-panel3').setAttribute('arenaui-button-panel', 'buttons',
+                        ['Option 1', { name: "B", img: "https://i.imgur.com/w3rB932.png", size: 0.3 }, 'Option 2']
+                    )
+                }, 1000);
+            </script>
+
             <a-entity id='test-prompt' position='7 1 -2' arenaui-prompt="title:Confirmation;
             description:Confirmation occurs when the system requires a feedback from user that keeps one operation going or return back to the previous step. This occurs when important steps are taken.;
             width: 1.25"

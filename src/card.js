@@ -265,7 +265,7 @@ AFRAME.registerComponent('arenaui-card', {
             margin: [ARENALayout.containerPadding, 0, 0, 0],
             borderRadius: ARENALayout.borderRadius,
         });
-        const closeButton = this.createButton('Close', () => {
+        const closeButton = this.createButton('Close', 0, () => {
             console.log('CLicked close button for card', this.el.id);
             this.el.remove();
         });
